@@ -55,7 +55,7 @@ const proxyOptions = {
   },
 };
 
-//setting up proxy for our identity service
+// setting up proxy for our identity service
 app.use(
   "/v1/auth",
   proxy(process.env.IDENTITY_SERVICE_URL, {
@@ -74,7 +74,7 @@ app.use(
   })
 );
 
-//setting up proxy for our post service
+// setting up proxy for our post service
 app.use(
   "/v1/posts",
   validateToken,
@@ -96,7 +96,7 @@ app.use(
   })
 );
 
-//setting up proxy for our media service
+// setting up proxy for our media service
 app.use(
   "/v1/media",
   validateToken,
@@ -121,7 +121,7 @@ app.use(
   })
 );
 
-//setting up proxy for our search service
+// setting up proxy for our search service
 app.use(
   "/v1/search",
   validateToken,
