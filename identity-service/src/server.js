@@ -27,7 +27,7 @@ mongoose
   .then(() => logger.info("Connected to mongodb"))
   .catch((e) => logger.error("Mongo connection error", e));
 
-// const redisClient = new Redis(process.env.REDIS_URL);
+const redisClient = new Redis(process.env.REDIS_URL);
 
 //middleware
 app.use(helmet());
@@ -42,22 +42,22 @@ app.use((req, res, next) => {
 
 // install: rate-limiter-flexible
 // DDos protection and rate limiting
-// const rateLimiter = new RateLimiterRedis({
-//   storeClient: redisClient,
-//   keyPrefix: "middleware",
-//   points: 10,
-//   duration: 1,
-// });
+const rateLimiter = new RateLimiterRedis({
+  storeClient: redisClient,
+  keyPrefix: "middleware",
+  points: 10,
+  duration: 1,
+});
 
-// app.use((req, res, next) => {
-//   rateLimiter
-//     .consume(req.ip)
-//     .then(() => next())
-//     .catch(() => {
-//       logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
-//       res.status(429).json({ success: false, message: "Too many requests" });
-//     });
-// });
+app.use((req, res, next) => {
+  rateLimiter
+    .consume(req.ip)
+    .then(() => next())
+    .catch(() => {
+      logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
+      res.status(429).json({ success: false, message: "Too many requests" });
+    });
+});
 
 // IP based rate limiting for sensitive endpoints
 const sensitiveEndpointsLimiter = rateLimit({
@@ -69,9 +69,9 @@ const sensitiveEndpointsLimiter = rateLimit({
     logger.warn(`Sensitive endpoint rate limit exceeded for IP: ${req.ip}`);
     res.status(429).json({ success: false, message: "Too many requests" });
   },
-  // store: new RedisStore({
-  //   sendCommand: (...args) => redisClient.call(...args),
-  // }),
+  store: new RedisStore({
+    sendCommand: (...args) => redisClient.call(...args),
+  }),
 });
 
 // Apply this sensitiveEndpointsLimiter to our routes
